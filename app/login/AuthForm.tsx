@@ -50,6 +50,7 @@ export function AuthForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState("");
   const googleButton = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -124,6 +125,7 @@ export function AuthForm({
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
     setError("");
+    setVerificationEmail("");
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
@@ -144,9 +146,18 @@ export function AuthForm({
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const result = (await response.json()) as { error?: string };
+      const result = (await response.json()) as {
+        error?: string;
+        email?: string;
+        verificationRequired?: boolean;
+      };
       if (!response.ok) {
         throw new Error(result.error ?? "Не вдалося продовжити");
+      }
+      if (result.verificationRequired && result.email) {
+        setVerificationEmail(result.email);
+        setSubmitting(false);
+        return;
       }
       window.location.assign(returnTo);
     } catch (requestError) {
@@ -155,6 +166,89 @@ export function AuthForm({
       );
       setSubmitting(false);
     }
+  }
+
+  async function verifyEmail(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSubmitting(true);
+    setError("");
+    const data = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: verificationEmail,
+          code: String(data.get("code") ?? ""),
+        }),
+      });
+      const result = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(result.error ?? "Не вдалося підтвердити email");
+      }
+      window.location.assign(returnTo);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Сталася помилка",
+      );
+      setSubmitting(false);
+    }
+  }
+
+  if (verificationEmail) {
+    return (
+      <div className="auth-action verification-action">
+        <div className="verification-mark" aria-hidden="true">
+          ✦
+        </div>
+        <h2>Перевір пошту</h2>
+        <p>
+          Ми надіслали шестизначний код на <strong>{verificationEmail}</strong>.
+          Код діє 10 хвилин.
+        </p>
+        <form className="auth-form" onSubmit={verifyEmail}>
+          <div className="auth-field">
+            <label htmlFor="verification-code">Код підтвердження</label>
+            <input
+              className="verification-code"
+              id="verification-code"
+              name="code"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              minLength={6}
+              maxLength={6}
+              autoComplete="one-time-code"
+              autoFocus
+              required
+              placeholder="000000"
+            />
+          </div>
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            className="button auth-submit"
+            type="submit"
+            disabled={submitting}
+          >
+            {submitting ? "Перевіряємо…" : "Підтвердити email"}
+          </button>
+          <button
+            className="verification-back"
+            type="button"
+            onClick={() => {
+              setVerificationEmail("");
+              setError("");
+            }}
+          >
+            ← Змінити дані
+          </button>
+        </form>
+      </div>
+    );
   }
 
   return (

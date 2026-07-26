@@ -44,6 +44,9 @@ export default async function LoginPage({
               <span>✓</span> Паролі зберігаються тільки у захищеному вигляді
             </li>
             <li>
+              <span>✓</span> Email підтверджується одноразовим кодом
+            </li>
+            <li>
               <span>✓</span> Дані кожного користувача ізольовані
             </li>
             <li>

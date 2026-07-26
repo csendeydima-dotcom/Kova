@@ -33,6 +33,16 @@ export const authAttempts = sqliteTable("auth_attempts", {
   lockedUntil: integer("locked_until").notNull().default(0),
 });
 
+export const emailVerifications = sqliteTable("email_verifications", {
+  email: text("email").primaryKey(),
+  name: text("name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  codeHash: text("code_hash").notNull(),
+  expiresAt: integer("expires_at").notNull(),
+  attempts: integer("attempts").notNull().default(0),
+  lastSentAt: integer("last_sent_at").notNull(),
+});
+
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   userEmail: text("user_email")

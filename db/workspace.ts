@@ -37,6 +37,18 @@ export async function ensureSchema() {
       ),
     d1
       .prepare(
+        `CREATE TABLE IF NOT EXISTS email_verifications (
+          email TEXT PRIMARY KEY,
+          name TEXT NOT NULL,
+          password_hash TEXT NOT NULL,
+          code_hash TEXT NOT NULL,
+          expires_at INTEGER NOT NULL,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          last_sent_at INTEGER NOT NULL
+        )`,
+      ),
+    d1
+      .prepare(
         `CREATE TABLE IF NOT EXISTS projects (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           user_email TEXT NOT NULL,
@@ -72,6 +84,9 @@ export async function ensureSchema() {
     ),
     d1.prepare(
       "CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)",
+    ),
+    d1.prepare(
+      "CREATE INDEX IF NOT EXISTS email_verifications_expiry_idx ON email_verifications (expires_at)",
     ),
   ]);
 

@@ -1,5 +1,4 @@
 import { eq } from "drizzle-orm";
-import { createEmailSession } from "@/app/auth";
 import {
   checkLoginRateLimit,
   hashPassword,
@@ -7,9 +6,14 @@ import {
   trustedMutationRequest,
   validatePassword,
 } from "@/app/auth-password";
+import {
+  generateVerificationCode,
+  hashVerificationCode,
+  sendVerificationCode,
+} from "@/app/email-verification";
 import { getDb } from "@/db";
-import { users } from "@/db/schema";
-import { ensureSchema, ensureWorkspace } from "@/db/workspace";
+import { emailVerifications, users } from "@/db/schema";
+import { ensureSchema } from "@/db/workspace";
 
 export async function POST(request: Request) {
   if (!trustedMutationRequest(request)) {
@@ -54,11 +58,11 @@ export async function POST(request: Request) {
     await ensureSchema();
     const db = getDb();
     const [existing] = await db
-      .select({ id: users.id })
+      .select({ id: users.id, passwordHash: users.passwordHash })
       .from(users)
       .where(eq(users.email, email))
       .limit(1);
-    if (existing) {
+    if (existing?.passwordHash) {
       await recordFailedLogin(rateLimit.key);
       return Response.json(
         { error: "Акаунт із таким email уже існує" },
@@ -66,11 +70,58 @@ export async function POST(request: Request) {
       );
     }
 
+    const now = Math.floor(Date.now() / 1000);
+    const [pending] = await db
+      .select({ lastSentAt: emailVerifications.lastSentAt })
+      .from(emailVerifications)
+      .where(eq(emailVerifications.email, email))
+      .limit(1);
+    if (pending && now - pending.lastSentAt < 60) {
+      return Response.json(
+        { error: "Новий код можна надіслати через хвилину" },
+        { status: 429 },
+      );
+    }
+
     const passwordHash = await hashPassword(password);
-    await db.insert(users).values({ email, name, passwordHash });
-    await ensureWorkspace(email, name);
-    await createEmailSession(email);
-    return Response.json({ user: { email, name } }, { status: 201 });
+    const code = generateVerificationCode();
+    const codeHash = await hashVerificationCode(email, code);
+    await db
+      .insert(emailVerifications)
+      .values({
+        email,
+        name,
+        passwordHash,
+        codeHash,
+        expiresAt: now + 10 * 60,
+        attempts: 0,
+        lastSentAt: now,
+      })
+      .onConflictDoUpdate({
+        target: emailVerifications.email,
+        set: {
+          name,
+          passwordHash,
+          codeHash,
+          expiresAt: now + 10 * 60,
+          attempts: 0,
+          lastSentAt: now,
+        },
+      });
+
+    try {
+      await sendVerificationCode(email, code);
+    } catch (emailError) {
+      await db
+        .delete(emailVerifications)
+        .where(eq(emailVerifications.email, email));
+      throw emailError;
+    }
+
+    return Response.json(
+      { verificationRequired: true, email },
+      { status: 202 },
+    );
   } catch (error) {
     console.error(
       "Registration failed",

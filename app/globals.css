@@ -1215,6 +1215,56 @@ footer > span {
   text-align: left;
 }
 
+.verification-action {
+  justify-content: center;
+}
+
+.verification-mark {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 18px;
+  border: 1px solid rgba(207, 255, 61, 0.42);
+  border-radius: 50%;
+  background: rgba(207, 255, 61, 0.1);
+  color: var(--acid);
+  font-size: 20px;
+  animation: verification-pulse 2.2s ease-in-out infinite;
+}
+
+.verification-action strong {
+  color: white;
+  font-weight: 650;
+}
+
+.auth-field .verification-code {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: 0.36em;
+  text-align: center;
+}
+
+.verification-back {
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: #a6aa9f;
+  font: inherit;
+  cursor: pointer;
+}
+
+.verification-back:hover {
+  color: white;
+}
+
+@keyframes verification-pulse {
+  50% {
+    transform: scale(1.06);
+    box-shadow: 0 0 24px rgba(207, 255, 61, 0.14);
+  }
+}
+
 .auth-divider {
   width: 100%;
   display: flex;
