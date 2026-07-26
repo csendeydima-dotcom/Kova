@@ -69,7 +69,52 @@ select {
   color: #5e6159;
 }
 
-.nav > .button {
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-self: end;
+  gap: 14px;
+}
+
+.locale-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.48);
+}
+
+.locale-tabs button {
+  min-width: 34px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #696c64;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.locale-tabs button:hover {
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.locale-tabs button.active {
+  background: var(--ink);
+  color: white;
+}
+
+.nav-actions > .button {
   justify-self: end;
 }
 
@@ -1102,6 +1147,13 @@ footer > span {
   left: 34px;
 }
 
+.auth-locale-tabs {
+  position: absolute;
+  top: 24px;
+  right: 34px;
+  z-index: 2;
+}
+
 .auth-card {
   width: min(940px, 100%);
   display: grid;
@@ -1644,6 +1696,10 @@ footer > span {
     display: none;
   }
 
+  .nav-actions {
+    gap: 9px;
+  }
+
   .hero {
     padding-top: 60px;
   }
@@ -1731,6 +1787,43 @@ footer > span {
 
   .nav {
     height: 72px;
+  }
+
+  .nav-actions > .button {
+    width: 42px;
+    height: 38px;
+    padding: 0;
+    overflow: hidden;
+    color: transparent;
+    font-size: 0;
+  }
+
+  .nav-actions > .button::after {
+    content: "↗";
+    color: white;
+    font-size: 15px;
+  }
+
+  .locale-tabs {
+    gap: 1px;
+    padding: 2px;
+  }
+
+  .locale-tabs button {
+    min-width: 29px;
+    height: 28px;
+    padding: 0 5px;
+    font-size: 9px;
+  }
+
+  .auth-brand {
+    top: 23px;
+    left: 20px;
+  }
+
+  .auth-locale-tabs {
+    top: 20px;
+    right: 18px;
   }
 
   .hero {

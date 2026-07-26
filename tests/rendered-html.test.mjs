@@ -5,10 +5,13 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 
 test("landing page contains the Kova product message", async () => {
-  const page = await readFile(new URL("app/page.tsx", root), "utf8");
+  const page = await readFile(new URL("app/HomeClient.tsx", root), "utf8");
   assert.match(page, /kova/);
   assert.match(page, /Менше рутини/);
   assert.match(page, /Почати безкоштовно/);
+  assert.match(page, /Menej rutiny/);
+  assert.match(page, /Less busywork/);
+  assert.match(page, /LanguageTabs/);
   assert.doesNotMatch(page, /SkeletonPreview|codex-preview/);
 });
 
@@ -43,9 +46,11 @@ test("protected data flows verify identity and ownership", async () => {
 });
 
 test("registration supports email credentials and keeps ChatGPT optional", async () => {
-  const login = await readFile(new URL("app/login/page.tsx", root), "utf8");
+  const login = await readFile(new URL("app/login/LoginClient.tsx", root), "utf8");
   assert.match(login, /email/);
-  assert.match(login, /chatGPTSignInPath/);
+  assert.match(login, /chatGPTHref/);
+  assert.match(login, /Tvoj účet Kova/);
+  assert.match(login, /Your Kova account/);
   const registerRoute = await readFile(
     new URL("app/api/auth/register/route.ts", root),
     "utf8",
