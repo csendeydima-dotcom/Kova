@@ -92,6 +92,25 @@ test("Google sign-in verifies the credential on the server", async () => {
   assert.match(googleRoute, /claims\.aud/);
 });
 
+test("dashboard has real views, languages, and no automatic demo data", async () => {
+  const dashboard = await readFile(
+    new URL("app/dashboard/DashboardClient.tsx", root),
+    "utf8",
+  );
+  const workspace = await readFile(new URL("db/workspace.ts", root), "utf8");
+  const taskRoute = await readFile(
+    new URL("app/api/tasks/route.ts", root),
+    "utf8",
+  );
+  assert.match(dashboard, /type View = "overview" \| "projects" \| "tasks"/);
+  assert.match(dashboard, /Slovenčina/);
+  assert.match(dashboard, /English/);
+  assert.match(dashboard, /localStorage\.setItem\("kova-locale"/);
+  assert.match(taskRoute, /export async function POST/);
+  assert.doesNotMatch(workspace, /Nord Studio/);
+  assert.doesNotMatch(workspace, /Arka App/);
+});
+
 test("worker applies browser security headers", async () => {
   const worker = await readFile(new URL("worker/index.ts", root), "utf8");
   assert.match(worker, /Content-Security-Policy/);

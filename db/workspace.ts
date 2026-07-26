@@ -1,7 +1,7 @@
 import { env } from "cloudflare:workers";
 import { and, eq } from "drizzle-orm";
 import { getDb } from ".";
-import { projects, tasks, users } from "./schema";
+import { projects, users } from "./schema";
 
 export async function ensureSchema() {
   const d1 = (env as unknown as { DB: D1Database }).DB;
@@ -112,66 +112,6 @@ export async function ensureWorkspace(email: string, name: string) {
     .insert(users)
     .values({ email, name })
     .onConflictDoUpdate({ target: users.email, set: { name } });
-
-  const existing = await db
-    .select({ id: projects.id })
-    .from(projects)
-    .where(eq(projects.userEmail, email))
-    .limit(1);
-
-  if (existing.length) return;
-
-  const today = new Date();
-  const dateAfter = (days: number) => {
-    const date = new Date(today);
-    date.setDate(date.getDate() + days);
-    return date.toISOString().slice(0, 10);
-  };
-
-  const [firstProject] = await db
-    .insert(projects)
-    .values({
-      userEmail: email,
-      name: "Nord Studio",
-      client: "Айдентика бренду",
-      budget: 1800,
-      status: "active",
-      dueDate: dateAfter(16),
-    })
-    .returning();
-
-  const [secondProject] = await db
-    .insert(projects)
-    .values({
-      userEmail: email,
-      name: "Arka App",
-      client: "Дизайн продукту",
-      budget: 2480,
-      status: "review",
-      dueDate: dateAfter(32),
-    })
-    .returning();
-
-  await db.insert(tasks).values([
-    {
-      projectId: firstProject.id,
-      userEmail: email,
-      title: "Підготувати фінальну презентацію",
-      completed: true,
-    },
-    {
-      projectId: firstProject.id,
-      userEmail: email,
-      title: "Експортувати логотипи",
-      completed: false,
-    },
-    {
-      projectId: secondProject.id,
-      userEmail: email,
-      title: "Узгодити прототип кабінету",
-      completed: false,
-    },
-  ]);
 }
 
 export async function userOwnsProject(email: string, projectId: number) {

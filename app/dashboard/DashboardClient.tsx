@@ -29,11 +29,188 @@ type DashboardProps = {
   signOutHref: string;
 };
 
-const money = new Intl.NumberFormat("uk-UA", {
-  style: "currency",
-  currency: "EUR",
-  maximumFractionDigits: 0,
-});
+type Locale = "uk" | "sk" | "en";
+type View = "overview" | "projects" | "tasks";
+
+const COPY = {
+  uk: {
+    overview: "Огляд",
+    projects: "Проєкти",
+    tasks: "Задачі",
+    language: "Мова",
+    greeting: "Привіт",
+    projectsTitle: "Усі проєкти",
+    tasksTitle: "Усі задачі",
+    newProject: "Новий проєкт",
+    newTask: "Нова задача",
+    activeProjects: "Активні проєкти",
+    workspace: "У твоєму робочому просторі",
+    workingBudget: "Бюджет у роботі",
+    allActive: "За всіма активними проєктами",
+    completedTasks: "Виконано задач",
+    progress: "Крок за кроком — до результату",
+    currentProjects: "Поточні проєкти",
+    nextTasks: "Наступні задачі",
+    total: "всього",
+    due: "до",
+    edit: "Редагувати",
+    project: "Проєкт",
+    emptyProjects: "Тут з’явиться твій перший проєкт.",
+    emptyTasks: "Список задач порожній.",
+    createFirstProject: "Спочатку створи проєкт для цієї задачі.",
+    statusActive: "У роботі",
+    statusReview: "На перевірці",
+    statusDone: "Завершено",
+    editProject: "Редагувати проєкт",
+    projectName: "Назва проєкту",
+    projectNameExample: "Наприклад, Bloom Studio",
+    client: "Клієнт або тип роботи",
+    clientExample: "Редизайн сайту",
+    budget: "Бюджет, €",
+    deadline: "Дедлайн",
+    status: "Статус",
+    delete: "Видалити",
+    save: "Зберегти зміни",
+    createProject: "Створити проєкт",
+    saving: "Зберігаю…",
+    close: "Закрити",
+    taskName: "Назва задачі",
+    taskNameExample: "Підготувати презентацію",
+    chooseProject: "Проєкт",
+    createTask: "Створити задачу",
+    projectCreated: "Проєкт створено",
+    projectUpdated: "Проєкт оновлено",
+    projectDeleted: "Проєкт видалено",
+    taskCreated: "Задачу створено",
+    taskUpdateError: "Не вдалося оновити задачу",
+    saveProjectError: "Не вдалося зберегти проєкт",
+    deleteProjectError: "Не вдалося видалити проєкт",
+    createTaskError: "Не вдалося створити задачу",
+    markDone: "Позначити виконаною",
+    markUndone: "Позначити невиконаною",
+    signOut: "Вийти",
+  },
+  sk: {
+    overview: "Prehľad",
+    projects: "Projekty",
+    tasks: "Úlohy",
+    language: "Jazyk",
+    greeting: "Ahoj",
+    projectsTitle: "Všetky projekty",
+    tasksTitle: "Všetky úlohy",
+    newProject: "Nový projekt",
+    newTask: "Nová úloha",
+    activeProjects: "Aktívne projekty",
+    workspace: "V tvojom pracovnom priestore",
+    workingBudget: "Rozpracovaný rozpočet",
+    allActive: "Za všetky aktívne projekty",
+    completedTasks: "Dokončené úlohy",
+    progress: "Krok za krokom k výsledku",
+    currentProjects: "Aktuálne projekty",
+    nextTasks: "Nasledujúce úlohy",
+    total: "celkom",
+    due: "do",
+    edit: "Upraviť",
+    project: "Projekt",
+    emptyProjects: "Tu sa zobrazí tvoj prvý projekt.",
+    emptyTasks: "Zoznam úloh je prázdny.",
+    createFirstProject: "Najprv vytvor projekt pre túto úlohu.",
+    statusActive: "Rozpracované",
+    statusReview: "Na kontrolu",
+    statusDone: "Dokončené",
+    editProject: "Upraviť projekt",
+    projectName: "Názov projektu",
+    projectNameExample: "Napríklad Bloom Studio",
+    client: "Klient alebo typ práce",
+    clientExample: "Redizajn webu",
+    budget: "Rozpočet, €",
+    deadline: "Termín",
+    status: "Stav",
+    delete: "Odstrániť",
+    save: "Uložiť zmeny",
+    createProject: "Vytvoriť projekt",
+    saving: "Ukladám…",
+    close: "Zavrieť",
+    taskName: "Názov úlohy",
+    taskNameExample: "Pripraviť prezentáciu",
+    chooseProject: "Projekt",
+    createTask: "Vytvoriť úlohu",
+    projectCreated: "Projekt bol vytvorený",
+    projectUpdated: "Projekt bol aktualizovaný",
+    projectDeleted: "Projekt bol odstránený",
+    taskCreated: "Úloha bola vytvorená",
+    taskUpdateError: "Úlohu sa nepodarilo aktualizovať",
+    saveProjectError: "Projekt sa nepodarilo uložiť",
+    deleteProjectError: "Projekt sa nepodarilo odstrániť",
+    createTaskError: "Úlohu sa nepodarilo vytvoriť",
+    markDone: "Označiť ako dokončené",
+    markUndone: "Označiť ako nedokončené",
+    signOut: "Odhlásiť sa",
+  },
+  en: {
+    overview: "Overview",
+    projects: "Projects",
+    tasks: "Tasks",
+    language: "Language",
+    greeting: "Hello",
+    projectsTitle: "All projects",
+    tasksTitle: "All tasks",
+    newProject: "New project",
+    newTask: "New task",
+    activeProjects: "Active projects",
+    workspace: "In your workspace",
+    workingBudget: "Working budget",
+    allActive: "Across all active projects",
+    completedTasks: "Completed tasks",
+    progress: "One step at a time",
+    currentProjects: "Current projects",
+    nextTasks: "Next tasks",
+    total: "total",
+    due: "due",
+    edit: "Edit",
+    project: "Project",
+    emptyProjects: "Your first project will appear here.",
+    emptyTasks: "Your task list is empty.",
+    createFirstProject: "Create a project before adding a task.",
+    statusActive: "In progress",
+    statusReview: "In review",
+    statusDone: "Completed",
+    editProject: "Edit project",
+    projectName: "Project name",
+    projectNameExample: "For example, Bloom Studio",
+    client: "Client or type of work",
+    clientExample: "Website redesign",
+    budget: "Budget, €",
+    deadline: "Deadline",
+    status: "Status",
+    delete: "Delete",
+    save: "Save changes",
+    createProject: "Create project",
+    saving: "Saving…",
+    close: "Close",
+    taskName: "Task name",
+    taskNameExample: "Prepare the presentation",
+    chooseProject: "Project",
+    createTask: "Create task",
+    projectCreated: "Project created",
+    projectUpdated: "Project updated",
+    projectDeleted: "Project deleted",
+    taskCreated: "Task created",
+    taskUpdateError: "Could not update the task",
+    saveProjectError: "Could not save the project",
+    deleteProjectError: "Could not delete the project",
+    createTaskError: "Could not create the task",
+    markDone: "Mark as completed",
+    markUndone: "Mark as incomplete",
+    signOut: "Sign out",
+  },
+} as const;
+
+const LOCALE_CODES: Record<Locale, string> = {
+  uk: "uk-UA",
+  sk: "sk-SK",
+  en: "en-GB",
+};
 
 function initials(name: string) {
   return name
@@ -41,19 +218,6 @@ function initials(name: string) {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
-}
-
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("uk-UA", {
-    day: "numeric",
-    month: "short",
-  }).format(new Date(`${value}T12:00:00`));
-}
-
-function statusLabel(status: Project["status"]) {
-  if (status === "review") return "На перевірці";
-  if (status === "done") return "Завершено";
-  return "У роботі";
 }
 
 export function DashboardClient({
@@ -64,30 +228,59 @@ export function DashboardClient({
 }: DashboardProps) {
   const [projects, setProjects] = useState(initialProjects);
   const [tasks, setTasks] = useState(initialTasks);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [view, setView] = useState<View>("overview");
+  const [locale, setLocale] = useState<Locale>("uk");
+  const [projectModalOpen, setProjectModalOpen] = useState(false);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const t = COPY[locale];
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("kova-locale");
+    if (saved === "uk" || saved === "sk" || saved === "en") {
+      setLocale(saved);
+      return;
+    }
+    const browserLocale = window.navigator.language.toLowerCase();
+    if (browserLocale.startsWith("sk")) setLocale("sk");
+    else if (browserLocale.startsWith("en")) setLocale("en");
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("kova-locale", locale);
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   const activeProjects = projects.filter((item) => item.status !== "done");
   const totalBudget = activeProjects.reduce((sum, item) => sum + item.budget, 0);
   const completedTasks = tasks.filter((item) => item.completed).length;
-  const firstName = user.name.split(/\s+/)[0] || "друже";
-
+  const firstName = user.name.split(/\s+/)[0] || "friend";
   const projectNames = useMemo(
     () => new Map(projects.map((project) => [project.id, project.name])),
     [projects],
   );
+  const money = useMemo(
+    () =>
+      new Intl.NumberFormat(LOCALE_CODES[locale], {
+        style: "currency",
+        currency: "EUR",
+        maximumFractionDigits: 0,
+      }),
+    [locale],
+  );
 
   useEffect(() => {
+    const modalOpen = projectModalOpen || taskModalOpen;
     if (!modalOpen) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeModal();
+      if (event.key === "Escape" && !saving) closeModals();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [modalOpen]);
+  }, [projectModalOpen, taskModalOpen, saving]);
 
   useEffect(() => {
     if (!notice) return;
@@ -95,30 +288,53 @@ export function DashboardClient({
     return () => window.clearTimeout(timer);
   }, [notice]);
 
-  function openCreateModal() {
-    setEditingProject(null);
-    setError("");
-    setModalOpen(true);
+  function formatDate(value: string) {
+    return new Intl.DateTimeFormat(LOCALE_CODES[locale], {
+      day: "numeric",
+      month: "short",
+    }).format(new Date(`${value}T12:00:00`));
   }
 
-  function openEditModal(project: Project) {
+  function statusLabel(status: Project["status"]) {
+    if (status === "review") return t.statusReview;
+    if (status === "done") return t.statusDone;
+    return t.statusActive;
+  }
+
+  function closeModals(force = false) {
+    if (saving && !force) return;
+    setProjectModalOpen(false);
+    setTaskModalOpen(false);
+    setEditingProject(null);
+    setError("");
+  }
+
+  function openCreateProject() {
+    setEditingProject(null);
+    setError("");
+    setProjectModalOpen(true);
+  }
+
+  function openEditProject(project: Project) {
     setEditingProject(project);
     setError("");
-    setModalOpen(true);
+    setProjectModalOpen(true);
   }
 
-  function closeModal(force = false) {
-    if (saving && !force) return;
-    setModalOpen(false);
-    setEditingProject(null);
+  function openCreateTask() {
+    if (!projects.length) {
+      setView("projects");
+      setNotice(t.createFirstProject);
+      return;
+    }
     setError("");
+    setTaskModalOpen(true);
   }
 
   async function saveProject(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError("");
-
     const form = new FormData(event.currentTarget);
     const payload = {
       name: String(form.get("name") || ""),
@@ -142,7 +358,7 @@ export function DashboardClient({
         error?: string;
       };
       if (!response.ok || !data.project) {
-        throw new Error(data.error || "Не вдалося створити проєкт");
+        throw new Error(data.error || t.saveProjectError);
       }
       setProjects((items) =>
         editingProject
@@ -151,11 +367,11 @@ export function DashboardClient({
             )
           : [data.project!, ...items],
       );
-      setNotice(editingProject ? "Проєкт оновлено" : "Проєкт створено");
-      closeModal(true);
+      setNotice(editingProject ? t.projectUpdated : t.projectCreated);
+      closeModals(true);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Сталася помилка",
+        requestError instanceof Error ? requestError.message : t.saveProjectError,
       );
     } finally {
       setSaving(false);
@@ -166,14 +382,13 @@ export function DashboardClient({
     if (!editingProject || saving) return;
     setSaving(true);
     setError("");
-
     try {
       const response = await fetch(`/api/projects/${editingProject.id}`, {
         method: "DELETE",
       });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(data.error || "Не вдалося видалити проєкт");
+        throw new Error(data.error || t.deleteProjectError);
       }
       setProjects((items) =>
         items.filter((item) => item.id !== editingProject.id),
@@ -181,11 +396,43 @@ export function DashboardClient({
       setTasks((items) =>
         items.filter((item) => item.projectId !== editingProject.id),
       );
-      setNotice("Проєкт видалено");
-      closeModal(true);
+      setNotice(t.projectDeleted);
+      closeModals(true);
     } catch (requestError) {
       setError(
-        requestError instanceof Error ? requestError.message : "Сталася помилка",
+        requestError instanceof Error
+          ? requestError.message
+          : t.deleteProjectError,
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function createTask(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError("");
+    const form = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: String(form.get("title") || ""),
+          projectId: Number(form.get("projectId")),
+        }),
+      });
+      const data = (await response.json()) as { task?: Task; error?: string };
+      if (!response.ok || !data.task) {
+        throw new Error(data.error || t.createTaskError);
+      }
+      setTasks((items) => [data.task!, ...items]);
+      setNotice(t.taskCreated);
+      closeModals(true);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : t.createTaskError,
       );
     } finally {
       setSaving(false);
@@ -199,23 +446,124 @@ export function DashboardClient({
         item.id === task.id ? { ...item, completed: nextCompleted } : item,
       ),
     );
-
     try {
       const response = await fetch(`/api/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ completed: nextCompleted }),
       });
-      if (!response.ok) throw new Error("Не вдалося оновити задачу");
+      if (!response.ok) throw new Error();
     } catch {
       setTasks((items) =>
         items.map((item) =>
           item.id === task.id ? { ...item, completed: task.completed } : item,
         ),
       );
-      setNotice("Не вдалося оновити задачу");
+      setNotice(t.taskUpdateError);
     }
   }
+
+  const renderProjects = (compact = false) => {
+    const list = compact ? projects.slice(0, 4) : projects;
+    return (
+      <section className={`panel ${compact ? "" : "panel-wide"}`}>
+        <div className="panel-head">
+          <h2>{compact ? t.currentProjects : t.projectsTitle}</h2>
+          <span>
+            {projects.length} {t.total}
+          </span>
+        </div>
+        {list.length ? (
+          list.map((project, index) => (
+            <article className="dash-project" key={project.id}>
+              <div className={`project-icon ${index % 2 ? "blue" : "coral"}`}>
+                {project.name[0]?.toUpperCase()}
+              </div>
+              <div>
+                <b>{project.name}</b>
+                <small>
+                  {project.client} · {t.due} {formatDate(project.dueDate)}
+                </small>
+              </div>
+              <div className="project-meta">
+                <strong>{money.format(project.budget)}</strong>
+                <small className="status-pill">
+                  {statusLabel(project.status)}
+                </small>
+              </div>
+              <button
+                className="project-edit"
+                type="button"
+                aria-label={`${t.edit}: ${project.name}`}
+                onClick={() => openEditProject(project)}
+              >
+                {t.edit}
+              </button>
+            </article>
+          ))
+        ) : (
+          <div className="empty-state">
+            <p>{t.emptyProjects}</p>
+            <button className="empty-action" type="button" onClick={openCreateProject}>
+              + {t.newProject}
+            </button>
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  const renderTasks = (compact = false) => {
+    const list = compact ? tasks.slice(0, 5) : tasks;
+    return (
+      <section className={`panel ${compact ? "" : "panel-wide"}`}>
+        <div className="panel-head">
+          <h2>{compact ? t.nextTasks : t.tasksTitle}</h2>
+          <span>
+            {tasks.length} {t.total}
+          </span>
+        </div>
+        {list.length ? (
+          list.map((task) => (
+            <div
+              className={`task-item ${task.completed ? "done" : ""}`}
+              key={task.id}
+            >
+              <button
+                type="button"
+                className="task-toggle"
+                aria-label={task.completed ? t.markUndone : t.markDone}
+                aria-pressed={task.completed}
+                onClick={() => toggleTask(task)}
+              >
+                {task.completed ? "✓" : ""}
+              </button>
+              <div>
+                <span className="task-title">{task.title}</span>
+                <span className="task-project">
+                  {projectNames.get(task.projectId) || t.project}
+                </span>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="empty-state">
+            <p>{t.emptyTasks}</p>
+            <button className="empty-action" type="button" onClick={openCreateTask}>
+              + {t.newTask}
+            </button>
+          </div>
+        )}
+      </section>
+    );
+  };
+
+  const pageTitle =
+    view === "overview"
+      ? `${t.greeting}, ${firstName}.`
+      : view === "projects"
+        ? t.projectsTitle
+        : t.tasksTitle;
 
   return (
     <main className="dashboard-body">
@@ -224,15 +572,35 @@ export function DashboardClient({
           <a className="brand" href="/">
             kova<span>.</span>
           </a>
-          <a className="dash-link active" href="/dashboard">
-            <span>⌂</span> Огляд
-          </a>
-          <a className="dash-link" href="#projects">
-            <span>◇</span> Проєкти
-          </a>
-          <a className="dash-link" href="#tasks">
-            <span>✓</span> Задачі
-          </a>
+          {(
+            [
+              ["overview", "⌂", t.overview],
+              ["projects", "◇", t.projects],
+              ["tasks", "✓", t.tasks],
+            ] as const
+          ).map(([target, icon, label]) => (
+            <button
+              className={`dash-link ${view === target ? "active" : ""}`}
+              type="button"
+              aria-pressed={view === target}
+              onClick={() => setView(target)}
+              key={target}
+            >
+              <span>{icon}</span> {label}
+            </button>
+          ))}
+          <label className="language-picker">
+            <span>{t.language}</span>
+            <select
+              value={locale}
+              onChange={(event) => setLocale(event.target.value as Locale)}
+              aria-label={t.language}
+            >
+              <option value="uk">UA · Українська</option>
+              <option value="sk">SK · Slovenčina</option>
+              <option value="en">EN · English</option>
+            </select>
+          </label>
           <div className="dash-user">
             <div className="avatar">{initials(user.name) || "K"}</div>
             <div>
@@ -246,164 +614,90 @@ export function DashboardClient({
           <header className="dash-top">
             <div>
               <p>
-                {new Intl.DateTimeFormat("uk-UA", {
+                {new Intl.DateTimeFormat(LOCALE_CODES[locale], {
                   weekday: "long",
                   day: "numeric",
                   month: "long",
                 }).format(new Date())}
               </p>
-              <h1>Привіт, {firstName}.</h1>
+              <h1>{pageTitle}</h1>
             </div>
             <div className="dash-actions">
-              <a className="signout" href={signOutHref} title="Вийти">
+              <a className="signout" href={signOutHref} title={t.signOut}>
                 ↗
               </a>
               <button
                 className="button new-project-button"
                 type="button"
-                onClick={openCreateModal}
+                onClick={view === "tasks" ? openCreateTask : openCreateProject}
               >
-                + Новий проєкт
+                + {view === "tasks" ? t.newTask : t.newProject}
               </button>
             </div>
           </header>
 
-          <div className="stats">
-            <article className="stat-card">
-              <span>Активні проєкти</span>
-              <strong>{String(activeProjects.length).padStart(2, "0")}</strong>
-              <small>У твоєму робочому просторі</small>
-            </article>
-            <article className="stat-card">
-              <span>Бюджет у роботі</span>
-              <strong>{money.format(totalBudget)}</strong>
-              <small>За всіма активними проєктами</small>
-            </article>
-            <article className="stat-card dark">
-              <span>Виконано задач</span>
-              <strong>
-                {completedTasks} / {tasks.length}
-              </strong>
-              <small>Крок за кроком — до результату</small>
-            </article>
-          </div>
-
-          <div className="dash-grid">
-            <section className="panel" id="projects">
-              <div className="panel-head">
-                <h2>Поточні проєкти</h2>
-                <span>{projects.length} всього</span>
+          {view === "overview" && (
+            <>
+              <div className="stats">
+                <article className="stat-card">
+                  <span>{t.activeProjects}</span>
+                  <strong>{String(activeProjects.length).padStart(2, "0")}</strong>
+                  <small>{t.workspace}</small>
+                </article>
+                <article className="stat-card">
+                  <span>{t.workingBudget}</span>
+                  <strong>{money.format(totalBudget)}</strong>
+                  <small>{t.allActive}</small>
+                </article>
+                <article className="stat-card dark">
+                  <span>{t.completedTasks}</span>
+                  <strong>
+                    {completedTasks} / {tasks.length}
+                  </strong>
+                  <small>{t.progress}</small>
+                </article>
               </div>
-              {projects.length ? (
-                projects.map((project, index) => (
-                  <article className="dash-project" key={project.id}>
-                    <div
-                      className={`project-icon ${index % 2 ? "blue" : "coral"}`}
-                    >
-                      {project.name[0]?.toUpperCase()}
-                    </div>
-                    <div>
-                      <b>{project.name}</b>
-                      <small>
-                        {project.client} · до {formatDate(project.dueDate)}
-                      </small>
-                    </div>
-                    <div className="project-meta">
-                      <strong>{money.format(project.budget)}</strong>
-                      <small className="status-pill">
-                        {statusLabel(project.status)}
-                      </small>
-                    </div>
-                    <button
-                      className="project-edit"
-                      type="button"
-                      aria-label={`Редагувати проєкт «${project.name}»`}
-                      onClick={() => openEditModal(project)}
-                    >
-                      Редагувати
-                    </button>
-                  </article>
-                ))
-              ) : (
-                <div className="empty-state">
-                  Тут з’явиться твій перший проєкт.
-                </div>
-              )}
-            </section>
-
-            <section className="panel" id="tasks">
-              <div className="panel-head">
-                <h2>Наступні задачі</h2>
-                <span>{tasks.length} всього</span>
+              <div className="dash-grid">
+                {renderProjects(true)}
+                {renderTasks(true)}
               </div>
-              {tasks.length ? (
-                tasks.map((task) => (
-                  <div
-                    className={`task-item ${task.completed ? "done" : ""}`}
-                    key={task.id}
-                  >
-                    <button
-                      type="button"
-                      className="task-toggle"
-                      aria-label={
-                        task.completed
-                          ? `Позначити «${task.title}» невиконаною`
-                          : `Позначити «${task.title}» виконаною`
-                      }
-                      aria-pressed={task.completed}
-                      onClick={() => toggleTask(task)}
-                    >
-                      {task.completed ? "✓" : ""}
-                    </button>
-                    <div>
-                      <span className="task-title">{task.title}</span>
-                      <span className="task-project">
-                        {projectNames.get(task.projectId) || "Проєкт"}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="empty-state">Список задач порожній.</div>
-              )}
-            </section>
-          </div>
+            </>
+          )}
+          {view === "projects" && renderProjects()}
+          {view === "tasks" && renderTasks()}
         </section>
       </div>
 
-      {modalOpen && (
+      {projectModalOpen && (
         <div
           className="modal-backdrop"
           role="presentation"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget) setModalOpen(false);
+            if (event.target === event.currentTarget) closeModals();
           }}
         >
           <section
             className="modal"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="new-project-title"
+            aria-labelledby="project-modal-title"
           >
             <div className="modal-head">
-              <h2 id="new-project-title">
-                {editingProject ? "Редагувати проєкт" : "Новий проєкт"}
+              <h2 id="project-modal-title">
+                {editingProject ? t.editProject : t.newProject}
               </h2>
               <button
                 className="modal-close"
                 type="button"
-                aria-label="Закрити"
-                onClick={() => closeModal()}
+                aria-label={t.close}
+                onClick={() => closeModals()}
               >
                 ×
               </button>
             </div>
-            <form
-              key={editingProject?.id ?? "new"}
-              onSubmit={saveProject}
-            >
+            <form key={editingProject?.id ?? "new"} onSubmit={saveProject}>
               <div className="field">
-                <label htmlFor="project-name">Назва проєкту</label>
+                <label htmlFor="project-name">{t.projectName}</label>
                 <input
                   id="project-name"
                   name="name"
@@ -412,11 +706,11 @@ export function DashboardClient({
                   required
                   autoFocus
                   defaultValue={editingProject?.name}
-                  placeholder="Наприклад, Bloom Studio"
+                  placeholder={t.projectNameExample}
                 />
               </div>
               <div className="field">
-                <label htmlFor="client">Клієнт або тип роботи</label>
+                <label htmlFor="client">{t.client}</label>
                 <input
                   id="client"
                   name="client"
@@ -424,12 +718,12 @@ export function DashboardClient({
                   maxLength={80}
                   required
                   defaultValue={editingProject?.client}
-                  placeholder="Редизайн сайту"
+                  placeholder={t.clientExample}
                 />
               </div>
               <div className="form-grid">
                 <div className="field">
-                  <label htmlFor="budget">Бюджет, €</label>
+                  <label htmlFor="budget">{t.budget}</label>
                   <input
                     id="budget"
                     name="budget"
@@ -443,7 +737,7 @@ export function DashboardClient({
                   />
                 </div>
                 <div className="field">
-                  <label htmlFor="dueDate">Дедлайн</label>
+                  <label htmlFor="dueDate">{t.deadline}</label>
                   <input
                     id="dueDate"
                     name="dueDate"
@@ -454,15 +748,15 @@ export function DashboardClient({
                 </div>
               </div>
               <div className="field">
-                <label htmlFor="status">Статус</label>
+                <label htmlFor="status">{t.status}</label>
                 <select
                   id="status"
                   name="status"
                   defaultValue={editingProject?.status ?? "active"}
                 >
-                  <option value="active">У роботі</option>
-                  <option value="review">На перевірці</option>
-                  <option value="done">Завершено</option>
+                  <option value="active">{t.statusActive}</option>
+                  <option value="review">{t.statusReview}</option>
+                  <option value="done">{t.statusDone}</option>
                 </select>
               </div>
               {error && (
@@ -478,25 +772,85 @@ export function DashboardClient({
                     disabled={saving}
                     onClick={deleteProject}
                   >
-                    Видалити
+                    {t.delete}
                   </button>
                 )}
-                <button
-                  className="button submit-button"
-                  type="submit"
-                  disabled={saving}
-                >
+                <button className="button submit-button" type="submit" disabled={saving}>
                   {saving
-                    ? "Зберігаю…"
+                    ? t.saving
                     : editingProject
-                      ? "Зберегти зміни"
-                      : "Створити проєкт"}
+                      ? t.save
+                      : t.createProject}
                 </button>
               </div>
             </form>
           </section>
         </div>
       )}
+
+      {taskModalOpen && (
+        <div
+          className="modal-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeModals();
+          }}
+        >
+          <section
+            className="modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="task-modal-title"
+          >
+            <div className="modal-head">
+              <h2 id="task-modal-title">{t.newTask}</h2>
+              <button
+                className="modal-close"
+                type="button"
+                aria-label={t.close}
+                onClick={() => closeModals()}
+              >
+                ×
+              </button>
+            </div>
+            <form onSubmit={createTask}>
+              <div className="field">
+                <label htmlFor="task-title">{t.taskName}</label>
+                <input
+                  id="task-title"
+                  name="title"
+                  minLength={2}
+                  maxLength={120}
+                  required
+                  autoFocus
+                  placeholder={t.taskNameExample}
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="task-project">{t.chooseProject}</label>
+                <select id="task-project" name="projectId" required>
+                  {projects.map((project) => (
+                    <option value={project.id} key={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {error && (
+                <p className="form-error" role="alert">
+                  {error}
+                </p>
+              )}
+              <div className="modal-actions">
+                <button className="button submit-button" type="submit" disabled={saving}>
+                  {saving ? t.saving : t.createTask}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+
       {notice && (
         <div className="toast" role="status">
           <span>✓</span> {notice}

@@ -566,13 +566,24 @@ footer > span {
 }
 
 .dash-link {
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 13px;
   padding: 12px 14px;
   margin-bottom: 6px;
+  border: 0;
   border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
   font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .dash-link.active {
@@ -580,10 +591,42 @@ footer > span {
   background: #2c2f29;
 }
 
+.dash-link:hover {
+  color: white;
+  transform: translateX(2px);
+}
+
 .dash-link span {
   width: 18px;
   text-align: center;
   color: #d8ddd2;
+}
+
+.language-picker {
+  display: grid;
+  gap: 7px;
+  margin-top: 18px;
+  padding: 14px 12px;
+  border-top: 1px solid #343730;
+}
+
+.language-picker > span {
+  color: #7f8479;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.language-picker select {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #41453d;
+  border-radius: 8px;
+  background: #20231e;
+  color: white;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
 }
 
 .dash-user {
@@ -711,6 +754,18 @@ footer > span {
   background: white;
   border: 1px solid #e0e1da;
   border-radius: 16px;
+}
+
+.panel-wide {
+  width: 100%;
+  animation: dash-panel-in 220ms ease both;
+}
+
+@keyframes dash-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
 }
 
 .panel-head {
@@ -875,6 +930,27 @@ footer > span {
   text-align: center;
   color: #898c83;
   font-size: 12px;
+}
+
+.empty-state p {
+  margin: 0 0 16px;
+}
+
+.empty-action {
+  padding: 9px 13px;
+  border: 1px solid #d8dad1;
+  border-radius: 999px;
+  background: #f5f5f1;
+  color: var(--ink);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.empty-action:hover {
+  border-color: var(--acid);
+  background: var(--acid);
 }
 
 .modal-backdrop {
@@ -1626,6 +1702,19 @@ footer > span {
     display: none;
   }
 
+  .language-picker {
+    padding-inline: 4px;
+  }
+
+  .language-picker > span {
+    display: none;
+  }
+
+  .language-picker select {
+    padding-inline: 4px;
+    font-size: 9px;
+  }
+
   .dash-user {
     justify-content: center;
   }
@@ -1749,13 +1838,32 @@ footer > span {
   }
 
   .dash-link {
-    display: none;
+    width: 38px;
+    justify-content: center;
+    margin: 0 2px;
+    padding: 10px;
+    font-size: 0;
+  }
+
+  .dash-link span {
+    font-size: 15px;
+  }
+
+  .language-picker {
+    width: 48px;
+    margin: 0 5px;
+    padding: 0;
+    border: 0;
+  }
+
+  .language-picker select {
+    height: 36px;
+    padding: 0 4px;
+    font-size: 9px;
   }
 
   .dash-user {
-    margin: 0;
-    padding: 0;
-    border: 0;
+    display: none;
   }
 
   .dash-main {
