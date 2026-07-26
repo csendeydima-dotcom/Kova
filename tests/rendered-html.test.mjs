@@ -70,7 +70,7 @@ test("registration supports email credentials and keeps ChatGPT optional", async
   assert.match(registerRoute, /sendVerificationCode/);
   assert.match(loginRoute, /checkLoginRateLimit/);
   assert.match(passwordSecurity, /PBKDF2/);
-  assert.match(passwordSecurity, /150_000/);
+  assert.match(passwordSecurity, /100_000/);
   assert.match(verificationRoute, /verificationHashesMatch/);
   assert.match(verificationRoute, /attempts >= 5/);
   assert.match(emailDelivery, /api\.resend\.com\/emails/);

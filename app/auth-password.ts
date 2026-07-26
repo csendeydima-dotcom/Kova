@@ -3,7 +3,8 @@ import { getDb } from "@/db";
 import { authAttempts } from "@/db/schema";
 import { ensureSchema } from "@/db/workspace";
 
-const PASSWORD_ITERATIONS = 150_000;
+// Cloudflare Workers currently caps Web Crypto PBKDF2 at 100,000 iterations.
+const PASSWORD_ITERATIONS = 100_000;
 const LOGIN_WINDOW_SECONDS = 15 * 60;
 const MAX_LOGIN_ATTEMPTS = 5;
 
@@ -78,6 +79,7 @@ export async function verifyPassword(password: string, storedHash: string) {
     algorithm !== "pbkdf2_sha256" ||
     !Number.isSafeInteger(iterations) ||
     iterations < 100_000 ||
+    iterations > PASSWORD_ITERATIONS ||
     !rawSalt ||
     !rawHash
   ) {
