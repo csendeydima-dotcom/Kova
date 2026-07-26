@@ -71,7 +71,11 @@ export async function POST(request: Request) {
     await ensureWorkspace(email, name);
     await createEmailSession(email);
     return Response.json({ user: { email, name } }, { status: 201 });
-  } catch {
+  } catch (error) {
+    console.error(
+      "Registration failed",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     return Response.json(
       { error: "Не вдалося створити акаунт. Спробуй ще раз." },
       { status: 500 },

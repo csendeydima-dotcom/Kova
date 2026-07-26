@@ -66,7 +66,11 @@ export async function POST(request: Request) {
     await clearLoginAttempts(rateLimit.key);
     await createEmailSession(user.email);
     return Response.json({ user: { email: user.email, name: user.name } });
-  } catch {
+  } catch (error) {
+    console.error(
+      "Login failed",
+      error instanceof Error ? error.message : "Unknown error",
+    );
     return Response.json(
       { error: "Не вдалося увійти. Спробуй ще раз." },
       { status: 500 },

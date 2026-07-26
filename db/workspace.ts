@@ -74,6 +74,20 @@ export async function ensureSchema() {
       "CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)",
     ),
   ]);
+
+  const userColumns = await d1
+    .prepare("PRAGMA table_info(users)")
+    .all<{ name: string }>();
+  if (!userColumns.results.some((column) => column.name === "password_hash")) {
+    try {
+      await d1
+        .prepare("ALTER TABLE users ADD COLUMN password_hash TEXT")
+        .run();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (!message.includes("duplicate column")) throw error;
+    }
+  }
 }
 
 export async function ensureWorkspace(email: string, name: string) {
