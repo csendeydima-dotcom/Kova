@@ -25,11 +25,28 @@ test("protected data flows verify identity and ownership", async () => {
     new URL("app/api/tasks/[id]/route.ts", root),
     "utf8",
   );
+  const projectEditRoute = await readFile(
+    new URL("app/api/projects/[id]/route.ts", root),
+    "utf8",
+  );
 
   assert.match(dashboard, /requireChatGPTUser/);
   assert.match(projectRoute, /getChatGPTUser/);
   assert.match(projectRoute, /same-origin/);
   assert.match(taskRoute, /eq\(tasks\.userEmail, user\.email\)/);
+  assert.match(projectEditRoute, /export async function PATCH/);
+  assert.match(projectEditRoute, /export async function DELETE/);
+  assert.match(
+    projectEditRoute,
+    /eq\(projects\.userEmail, auth\.user\.email\)/,
+  );
+});
+
+test("registration handoff supports platform email and Google choices", async () => {
+  const login = await readFile(new URL("app/login/page.tsx", root), "utf8");
+  assert.match(login, /Google/);
+  assert.match(login, /email/);
+  assert.match(login, /chatGPTSignInPath/);
 });
 
 test("worker applies browser security headers", async () => {

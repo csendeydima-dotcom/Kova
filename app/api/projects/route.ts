@@ -3,7 +3,7 @@ import { getDb } from "@/db";
 import { projects } from "@/db/schema";
 import { ensureSchema } from "@/db/workspace";
 
-const ALLOWED_STATUSES = new Set(["active", "review"]);
+const ALLOWED_STATUSES = new Set(["active", "review", "done"]);
 
 function trustedRequest(request: Request) {
   const site = request.headers.get("sec-fetch-site");
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         client,
         budget,
         dueDate,
-        status: status as "active" | "review",
+        status: status as "active" | "review" | "done",
       })
       .returning();
 

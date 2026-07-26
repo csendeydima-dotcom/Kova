@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type Project = {
   id: number;
@@ -47,7 +47,7 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("uk-UA", {
     day: "numeric",
     month: "short",
-  }).format(new Date(value));
+  }).format(new Date(`${value}T12:00:00`));
 }
 
 function statusLabel(status: Project["status"]) {
@@ -65,8 +65,10 @@ export function DashboardClient({
   const [projects, setProjects] = useState(initialProjects);
   const [tasks, setTasks] = useState(initialTasks);
   const [modalOpen, setModalOpen] = useState(false);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
   const activeProjects = projects.filter((item) => item.status !== "done");
   const totalBudget = activeProjects.reduce((sum, item) => sum + item.budget, 0);
@@ -78,7 +80,41 @@ export function DashboardClient({
     [projects],
   );
 
-  async function createProject(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (!modalOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") closeModal();
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [modalOpen]);
+
+  useEffect(() => {
+    if (!notice) return;
+    const timer = window.setTimeout(() => setNotice(""), 3200);
+    return () => window.clearTimeout(timer);
+  }, [notice]);
+
+  function openCreateModal() {
+    setEditingProject(null);
+    setError("");
+    setModalOpen(true);
+  }
+
+  function openEditModal(project: Project) {
+    setEditingProject(project);
+    setError("");
+    setModalOpen(true);
+  }
+
+  function closeModal(force = false) {
+    if (saving && !force) return;
+    setModalOpen(false);
+    setEditingProject(null);
+    setError("");
+  }
+
+  async function saveProject(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError("");
@@ -93,8 +129,11 @@ export function DashboardClient({
     };
 
     try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
+      const endpoint = editingProject
+        ? `/api/projects/${editingProject.id}`
+        : "/api/projects";
+      const response = await fetch(endpoint, {
+        method: editingProject ? "PATCH" : "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -105,8 +144,45 @@ export function DashboardClient({
       if (!response.ok || !data.project) {
         throw new Error(data.error || "Не вдалося створити проєкт");
       }
-      setProjects((items) => [data.project!, ...items]);
-      setModalOpen(false);
+      setProjects((items) =>
+        editingProject
+          ? items.map((item) =>
+              item.id === data.project!.id ? data.project! : item,
+            )
+          : [data.project!, ...items],
+      );
+      setNotice(editingProject ? "Проєкт оновлено" : "Проєкт створено");
+      closeModal(true);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error ? requestError.message : "Сталася помилка",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteProject() {
+    if (!editingProject || saving) return;
+    setSaving(true);
+    setError("");
+
+    try {
+      const response = await fetch(`/api/projects/${editingProject.id}`, {
+        method: "DELETE",
+      });
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error || "Не вдалося видалити проєкт");
+      }
+      setProjects((items) =>
+        items.filter((item) => item.id !== editingProject.id),
+      );
+      setTasks((items) =>
+        items.filter((item) => item.projectId !== editingProject.id),
+      );
+      setNotice("Проєкт видалено");
+      closeModal(true);
     } catch (requestError) {
       setError(
         requestError instanceof Error ? requestError.message : "Сталася помилка",
@@ -124,17 +200,20 @@ export function DashboardClient({
       ),
     );
 
-    const response = await fetch(`/api/tasks/${task.id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ completed: nextCompleted }),
-    });
-    if (!response.ok) {
+    try {
+      const response = await fetch(`/api/tasks/${task.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ completed: nextCompleted }),
+      });
+      if (!response.ok) throw new Error("Не вдалося оновити задачу");
+    } catch {
       setTasks((items) =>
         items.map((item) =>
           item.id === task.id ? { ...item, completed: task.completed } : item,
         ),
       );
+      setNotice("Не вдалося оновити задачу");
     }
   }
 
@@ -182,7 +261,7 @@ export function DashboardClient({
               <button
                 className="button new-project-button"
                 type="button"
-                onClick={() => setModalOpen(true)}
+                onClick={openCreateModal}
               >
                 + Новий проєкт
               </button>
@@ -235,6 +314,14 @@ export function DashboardClient({
                         {statusLabel(project.status)}
                       </small>
                     </div>
+                    <button
+                      className="project-edit"
+                      type="button"
+                      aria-label={`Редагувати проєкт «${project.name}»`}
+                      onClick={() => openEditModal(project)}
+                    >
+                      Редагувати
+                    </button>
                   </article>
                 ))
               ) : (
@@ -299,17 +386,22 @@ export function DashboardClient({
             aria-labelledby="new-project-title"
           >
             <div className="modal-head">
-              <h2 id="new-project-title">Новий проєкт</h2>
+              <h2 id="new-project-title">
+                {editingProject ? "Редагувати проєкт" : "Новий проєкт"}
+              </h2>
               <button
                 className="modal-close"
                 type="button"
                 aria-label="Закрити"
-                onClick={() => setModalOpen(false)}
+                onClick={() => closeModal()}
               >
                 ×
               </button>
             </div>
-            <form onSubmit={createProject}>
+            <form
+              key={editingProject?.id ?? "new"}
+              onSubmit={saveProject}
+            >
               <div className="field">
                 <label htmlFor="project-name">Назва проєкту</label>
                 <input
@@ -319,6 +411,7 @@ export function DashboardClient({
                   maxLength={80}
                   required
                   autoFocus
+                  defaultValue={editingProject?.name}
                   placeholder="Наприклад, Bloom Studio"
                 />
               </div>
@@ -330,6 +423,7 @@ export function DashboardClient({
                   minLength={2}
                   maxLength={80}
                   required
+                  defaultValue={editingProject?.client}
                   placeholder="Редизайн сайту"
                 />
               </div>
@@ -344,6 +438,7 @@ export function DashboardClient({
                     max="10000000"
                     step="1"
                     required
+                    defaultValue={editingProject?.budget}
                     placeholder="1500"
                   />
                 </div>
@@ -354,14 +449,20 @@ export function DashboardClient({
                     name="dueDate"
                     type="date"
                     required
+                    defaultValue={editingProject?.dueDate}
                   />
                 </div>
               </div>
               <div className="field">
                 <label htmlFor="status">Статус</label>
-                <select id="status" name="status" defaultValue="active">
+                <select
+                  id="status"
+                  name="status"
+                  defaultValue={editingProject?.status ?? "active"}
+                >
                   <option value="active">У роботі</option>
                   <option value="review">На перевірці</option>
+                  <option value="done">Завершено</option>
                 </select>
               </div>
               {error && (
@@ -369,15 +470,36 @@ export function DashboardClient({
                   {error}
                 </p>
               )}
-              <button
-                className="button submit-button"
-                type="submit"
-                disabled={saving}
-              >
-                {saving ? "Зберігаю…" : "Створити проєкт"}
-              </button>
+              <div className="modal-actions">
+                {editingProject && (
+                  <button
+                    className="delete-button"
+                    type="button"
+                    disabled={saving}
+                    onClick={deleteProject}
+                  >
+                    Видалити
+                  </button>
+                )}
+                <button
+                  className="button submit-button"
+                  type="submit"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Зберігаю…"
+                    : editingProject
+                      ? "Зберегти зміни"
+                      : "Створити проєкт"}
+                </button>
+              </div>
             </form>
           </section>
+        </div>
+      )}
+      {notice && (
+        <div className="toast" role="status">
+          <span>✓</span> {notice}
         </div>
       )}
     </main>

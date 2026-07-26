@@ -1,4 +1,4 @@
-import { chatGPTSignInPath, getChatGPTUser } from "./chatgpt-auth";
+import { getChatGPTUser } from "./chatgpt-auth";
 
 const features = [
   {
@@ -20,7 +20,7 @@ const features = [
 
 export default async function Home() {
   const user = await getChatGPTUser();
-  const primaryHref = user ? "/dashboard" : chatGPTSignInPath("/dashboard");
+  const primaryHref = user ? "/dashboard" : "/login";
 
   return (
     <main>
@@ -37,7 +37,7 @@ export default async function Home() {
         </a>
       </nav>
 
-      <section className="hero shell">
+      <section className="hero shell" data-reveal>
         <div className="eyebrow">
           <span className="status-dot" />
           Робочий простір для фрилансерів
@@ -57,7 +57,11 @@ export default async function Home() {
           </a>
         </div>
 
-        <div className="product-preview" aria-label="Прев’ю кабінету Kova">
+        <div
+          className="product-preview"
+          aria-label="Прев’ю кабінету Kova"
+          data-reveal
+        >
           <div className="preview-sidebar">
             <div className="preview-mark">k.</div>
             <div className="preview-nav active">
@@ -144,11 +148,11 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="features shell" id="product">
+      <section className="features shell" id="product" data-reveal>
         <div className="section-label">Все, що треба. Нічого зайвого.</div>
         <div className="feature-grid">
           {features.map((feature) => (
-            <article key={feature.number}>
+            <article key={feature.number} data-reveal>
               <span>{feature.number}</span>
               <h2>{feature.title}</h2>
               <p>{feature.text}</p>
@@ -157,7 +161,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="security shell" id="security">
+      <section className="security shell" id="security" data-reveal>
         <div>
           <span className="section-label">Безпека за замовчуванням</span>
           <h2>Твої дані — тільки твої.</h2>
