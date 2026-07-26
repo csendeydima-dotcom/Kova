@@ -64,6 +64,21 @@ test("registration supports email credentials and keeps ChatGPT optional", async
   assert.match(passwordSecurity, /150_000/);
 });
 
+test("Google sign-in verifies the credential on the server", async () => {
+  const authForm = await readFile(
+    new URL("app/login/AuthForm.tsx", root),
+    "utf8",
+  );
+  const googleRoute = await readFile(
+    new URL("app/api/auth/google/route.ts", root),
+    "utf8",
+  );
+  assert.match(authForm, /accounts\.google\.com\/gsi\/client/);
+  assert.match(googleRoute, /crypto\.subtle\.verify/);
+  assert.match(googleRoute, /email_verified/);
+  assert.match(googleRoute, /claims\.aud/);
+});
+
 test("worker applies browser security headers", async () => {
   const worker = await readFile(new URL("worker/index.ts", root), "utf8");
   assert.match(worker, /Content-Security-Policy/);

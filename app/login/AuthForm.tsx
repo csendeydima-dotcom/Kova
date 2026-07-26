@@ -1,20 +1,125 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Mode = "login" | "register";
+
+type GoogleCredentialResponse = {
+  credential?: string;
+};
+
+type GoogleAccounts = {
+  id: {
+    initialize(options: {
+      client_id: string;
+      callback: (response: GoogleCredentialResponse) => void;
+      context: "signin";
+      ux_mode: "popup";
+    }): void;
+    renderButton(
+      parent: HTMLElement,
+      options: {
+        type: "standard";
+        shape: "pill";
+        theme: "outline";
+        text: "continue_with";
+        size: "large";
+        width: number;
+        locale: string;
+      },
+    ): void;
+  };
+};
+
+declare global {
+  interface Window {
+    google?: { accounts: GoogleAccounts };
+  }
+}
 
 export function AuthForm({
   returnTo,
   chatGPTHref,
+  googleClientId,
 }: {
   returnTo: string;
   chatGPTHref: string;
+  googleClientId: string;
 }) {
   const [mode, setMode] = useState<Mode>("register");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const googleButton = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!googleClientId || !googleButton.current) return;
+
+    let cancelled = false;
+    const renderGoogleButton = () => {
+      if (cancelled || !googleButton.current || !window.google) return;
+      googleButton.current.replaceChildren();
+      window.google.accounts.id.initialize({
+        client_id: googleClientId,
+        context: "signin",
+        ux_mode: "popup",
+        callback: async ({ credential }) => {
+          if (!credential) {
+            setError("Google не повернув дані для входу.");
+            return;
+          }
+          setSubmitting(true);
+          setError("");
+          try {
+            const response = await fetch("/api/auth/google", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ credential }),
+            });
+            const result = (await response.json()) as { error?: string };
+            if (!response.ok) {
+              throw new Error(result.error ?? "Не вдалося увійти через Google");
+            }
+            window.location.assign(returnTo);
+          } catch (requestError) {
+            setError(
+              requestError instanceof Error
+                ? requestError.message
+                : "Не вдалося увійти через Google",
+            );
+            setSubmitting(false);
+          }
+        },
+      });
+      window.google.accounts.id.renderButton(googleButton.current, {
+        type: "standard",
+        shape: "pill",
+        theme: "outline",
+        text: "continue_with",
+        size: "large",
+        width: Math.min(320, googleButton.current.clientWidth),
+        locale: "uk",
+      });
+    };
+
+    const existing = document.querySelector<HTMLScriptElement>(
+      'script[src="https://accounts.google.com/gsi/client"]',
+    );
+    if (existing) {
+      if (window.google) renderGoogleButton();
+      else existing.addEventListener("load", renderGoogleButton, { once: true });
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.addEventListener("load", renderGoogleButton, { once: true });
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [googleClientId, returnTo]);
 
   function switchMode(nextMode: Mode) {
     setMode(nextMode);
@@ -156,6 +261,13 @@ export function AuthForm({
       <div className="auth-divider">
         <span>або</span>
       </div>
+      {googleClientId && (
+        <div
+          className="google-button"
+          ref={googleButton}
+          aria-label="Продовжити через Google"
+        />
+      )}
       <a className="chatgpt-button" href={chatGPTHref}>
         <b aria-hidden="true">◉</b>
         Продовжити через ChatGPT

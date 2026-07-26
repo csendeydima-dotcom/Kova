@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { env } from "cloudflare:workers";
 import {
   chatGPTSignInPath,
   getCurrentUser,
@@ -18,6 +19,9 @@ export default async function LoginPage({
 
   const query = await searchParams;
   const returnTo = safeRelativePath(query.returnTo ?? "/dashboard");
+  const googleClientId = (
+    env as unknown as { GOOGLE_CLIENT_ID?: string }
+  ).GOOGLE_CLIENT_ID;
 
   return (
     <main className="auth-page">
@@ -50,6 +54,7 @@ export default async function LoginPage({
         <AuthForm
           returnTo={returnTo}
           chatGPTHref={chatGPTSignInPath(returnTo)}
+          googleClientId={googleClientId ?? ""}
         />
       </section>
       <a className="auth-back" href="/">
