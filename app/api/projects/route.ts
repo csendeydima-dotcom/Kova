@@ -1,4 +1,4 @@
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getCurrentUser } from "@/app/auth";
 import { getDb } from "@/db";
 import { projects } from "@/db/schema";
 import { ensureSchema } from "@/db/workspace";
@@ -21,7 +21,7 @@ function trustedRequest(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getCurrentUser();
   if (!user) {
     return Response.json({ error: "Потрібно увійти в акаунт" }, { status: 401 });
   }

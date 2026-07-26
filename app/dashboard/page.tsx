@@ -4,14 +4,15 @@ import { projects, tasks } from "@/db/schema";
 import { ensureWorkspace } from "@/db/workspace";
 import {
   chatGPTSignOutPath,
-  requireChatGPTUser,
-} from "../chatgpt-auth";
+  requireCurrentUser,
+  signOutPath,
+} from "../auth";
 import { DashboardClient } from "./DashboardClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const user = await requireChatGPTUser("/dashboard");
+  const user = await requireCurrentUser("/dashboard");
   await ensureWorkspace(user.email, user.displayName);
 
   const db = getDb();
@@ -36,7 +37,9 @@ export default async function DashboardPage() {
       }}
       initialProjects={projectRows}
       initialTasks={taskRows}
-      signOutHref={chatGPTSignOutPath("/")}
+      signOutHref={
+        user.provider === "chatgpt" ? chatGPTSignOutPath("/") : signOutPath("/")
+      }
     />
   );
 }

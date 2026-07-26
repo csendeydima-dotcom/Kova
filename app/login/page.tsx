@@ -1,11 +1,23 @@
 import { redirect } from "next/navigation";
-import { chatGPTSignInPath, getChatGPTUser } from "../chatgpt-auth";
+import {
+  chatGPTSignInPath,
+  getCurrentUser,
+  safeRelativePath,
+} from "../auth";
+import { AuthForm } from "./AuthForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function LoginPage() {
-  const user = await getChatGPTUser();
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ returnTo?: string }>;
+}) {
+  const user = await getCurrentUser();
   if (user) redirect("/dashboard");
+
+  const query = await searchParams;
+  const returnTo = safeRelativePath(query.returnTo ?? "/dashboard");
 
   return (
     <main className="auth-page">
@@ -16,41 +28,29 @@ export default async function LoginPage() {
         <div className="auth-copy">
           <div className="eyebrow">
             <span className="status-dot" />
-            Захищена реєстрація
+            Твій акаунт Kova
           </div>
           <h1>Твоя робота. Твій простір.</h1>
           <p>
-            Створи профіль за хвилину. На наступному кроці можна продовжити
-            через Google або увійти звичайним email.
+            Реєструйся звичайним email або продовжуй через ChatGPT — тепер вибір
+            за тобою.
           </p>
           <ul>
             <li>
-              <span>✓</span> Не зберігаємо твої паролі
+              <span>✓</span> Паролі зберігаються тільки у захищеному вигляді
             </li>
             <li>
               <span>✓</span> Дані кожного користувача ізольовані
             </li>
             <li>
-              <span>✓</span> Перший вхід автоматично створює профіль
+              <span>✓</span> Одна сесія працює до 30 днів
             </li>
           </ul>
         </div>
-        <div className="auth-action">
-          <div className="auth-orbit" aria-hidden="true">
-            <span className="orbit-dot orbit-one" />
-            <span className="orbit-dot orbit-two" />
-            <b>k.</b>
-          </div>
-          <h2>Почнемо?</h2>
-          <p>Обери Google або email на захищеному екрані входу.</p>
-          <a className="button auth-button" href={chatGPTSignInPath("/dashboard")}>
-            Створити акаунт / увійти <span>→</span>
-          </a>
-          <small>
-            Продовжуючи, ти погоджуєшся використовувати Kova для власних
-            робочих даних.
-          </small>
-        </div>
+        <AuthForm
+          returnTo={returnTo}
+          chatGPTHref={chatGPTSignInPath(returnTo)}
+        />
       </section>
       <a className="auth-back" href="/">
         ← Повернутися на головну

@@ -12,7 +12,27 @@ export async function ensureSchema() {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           email TEXT NOT NULL UNIQUE,
           name TEXT NOT NULL,
+          password_hash TEXT,
           created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )`,
+      ),
+    d1
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS sessions (
+          token_hash TEXT PRIMARY KEY,
+          user_email TEXT NOT NULL,
+          expires_at INTEGER NOT NULL,
+          created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_email) REFERENCES users(email) ON DELETE CASCADE
+        )`,
+      ),
+    d1
+      .prepare(
+        `CREATE TABLE IF NOT EXISTS auth_attempts (
+          key TEXT PRIMARY KEY,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          window_started_at INTEGER NOT NULL,
+          locked_until INTEGER NOT NULL DEFAULT 0
         )`,
       ),
     d1
@@ -46,6 +66,12 @@ export async function ensureSchema() {
     ),
     d1.prepare(
       "CREATE INDEX IF NOT EXISTS tasks_owner_idx ON tasks (user_email, project_id)",
+    ),
+    d1.prepare(
+      "CREATE INDEX IF NOT EXISTS sessions_owner_idx ON sessions (user_email)",
+    ),
+    d1.prepare(
+      "CREATE INDEX IF NOT EXISTS sessions_expiry_idx ON sessions (expires_at)",
     ),
   ]);
 }

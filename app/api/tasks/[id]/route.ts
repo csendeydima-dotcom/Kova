@@ -1,4 +1,4 @@
-import { getChatGPTUser } from "@/app/chatgpt-auth";
+import { getCurrentUser } from "@/app/auth";
 import { getDb } from "@/db";
 import { tasks } from "@/db/schema";
 import { ensureSchema } from "@/db/workspace";
@@ -13,7 +13,7 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ id: string }> },
 ) {
-  const user = await getChatGPTUser();
+  const user = await getCurrentUser();
   if (!user) {
     return Response.json({ error: "Потрібно увійти в акаунт" }, { status: 401 });
   }

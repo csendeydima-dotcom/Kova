@@ -7,10 +7,31 @@ export const users = sqliteTable(
     id: integer("id").primaryKey({ autoIncrement: true }),
     email: text("email").notNull(),
     name: text("name").notNull(),
+    passwordHash: text("password_hash"),
     createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [uniqueIndex("users_email_idx").on(table.email)],
 );
+
+export const sessions = sqliteTable(
+  "sessions",
+  {
+    tokenHash: text("token_hash").primaryKey(),
+    userEmail: text("user_email")
+      .notNull()
+      .references(() => users.email, { onDelete: "cascade" }),
+    expiresAt: integer("expires_at").notNull(),
+    createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [uniqueIndex("sessions_token_idx").on(table.tokenHash)],
+);
+
+export const authAttempts = sqliteTable("auth_attempts", {
+  key: text("key").primaryKey(),
+  attempts: integer("attempts").notNull().default(0),
+  windowStartedAt: integer("window_started_at").notNull(),
+  lockedUntil: integer("locked_until").notNull().default(0),
+});
 
 export const projects = sqliteTable("projects", {
   id: integer("id").primaryKey({ autoIncrement: true }),

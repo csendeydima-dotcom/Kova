@@ -30,8 +30,8 @@ test("protected data flows verify identity and ownership", async () => {
     "utf8",
   );
 
-  assert.match(dashboard, /requireChatGPTUser/);
-  assert.match(projectRoute, /getChatGPTUser/);
+  assert.match(dashboard, /requireCurrentUser/);
+  assert.match(projectRoute, /getCurrentUser/);
   assert.match(projectRoute, /same-origin/);
   assert.match(taskRoute, /eq\(tasks\.userEmail, user\.email\)/);
   assert.match(projectEditRoute, /export async function PATCH/);
@@ -42,11 +42,26 @@ test("protected data flows verify identity and ownership", async () => {
   );
 });
 
-test("registration handoff supports platform email and Google choices", async () => {
+test("registration supports email credentials and keeps ChatGPT optional", async () => {
   const login = await readFile(new URL("app/login/page.tsx", root), "utf8");
-  assert.match(login, /Google/);
   assert.match(login, /email/);
   assert.match(login, /chatGPTSignInPath/);
+  const registerRoute = await readFile(
+    new URL("app/api/auth/register/route.ts", root),
+    "utf8",
+  );
+  const loginRoute = await readFile(
+    new URL("app/api/auth/login/route.ts", root),
+    "utf8",
+  );
+  const passwordSecurity = await readFile(
+    new URL("app/auth-password.ts", root),
+    "utf8",
+  );
+  assert.match(registerRoute, /hashPassword/);
+  assert.match(loginRoute, /checkLoginRateLimit/);
+  assert.match(passwordSecurity, /PBKDF2/);
+  assert.match(passwordSecurity, /150_000/);
 });
 
 test("worker applies browser security headers", async () => {
