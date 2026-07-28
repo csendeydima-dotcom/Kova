@@ -1,67 +1,81 @@
 # Kova
 
-Сучасний мінімалістичний workspace для фрилансерів: проєкти, бюджети та
-задачі в одному особистому кабінеті.
+Kova is a multilingual freelance workspace for managing projects, budgets, deadlines, and tasks. It is a portfolio-grade full-stack application built with React, Spring Boot, and PostgreSQL.
 
-**Live demo:** [www.kova-work.com](https://www.kova-work.com)
+## Stack
 
-## Можливості
+- React 19, TypeScript, Vite
+- Java 21, Spring Boot 3, Spring Security
+- PostgreSQL, Spring Data JPA, Flyway
+- Docker and Docker Compose
+- Resend email verification
+- Google Identity Services
+- GitHub Actions CI
+- Render deployment blueprint
 
-- адаптивний landing page із плавними CSS-анімаціями;
-- реєстрація через email і пароль із шестизначним кодом підтвердження;
-- вхід через Google Identity Services і ChatGPT;
-- PBKDF2-хешування паролів і захищені HttpOnly-сесії;
-- обмеження спроб входу та перевірки same-origin запитів;
-- персональні проєкти, бюджети, дедлайни й задачі;
-- створення, редагування та видалення проєктів;
-- ізоляція даних кожного користувача на сервері;
-- постійне зберігання даних у Cloudflare D1;
-- transactional email через Resend;
-- CSP, HSTS та інші browser security headers.
+## Features
 
-## Технології
+- Email/password registration with a six-digit verification code
+- Google sign-in with server-side credential verification
+- Opaque, hashed, HttpOnly session cookies
+- BCrypt password hashing
+- Same-origin mutation protection and strict browser security headers
+- Per-user project and task isolation
+- Project creation, editing, deletion, status, budget, and deadlines
+- Task creation and completion tracking
+- Ukrainian, Slovak, and English interfaces
+- Responsive landing, authentication, and dashboard screens
+- Database migrations and automated tests
 
-- React 19, TypeScript, Vinext;
-- Cloudflare Workers і D1;
-- Drizzle ORM;
-- Google Identity Services;
-- Resend Email API;
-- CSS без UI-фреймворків.
+## Architecture
 
-## Локальний запуск
+The production Docker image builds the React app first, embeds the generated static files in Spring Boot, and serves the UI and REST API from one origin. PostgreSQL is the only external runtime dependency.
 
-Потрібен Node.js 22.13 або новіший.
+```text
+Browser
+  └── Spring Boot container
+        ├── React static application
+        ├── REST API + Spring Security
+        └── PostgreSQL (Neon in production)
+```
+
+## Local development
+
+Copy `.env.example` to `.env`, add optional Google and Resend credentials, then run:
 
 ```bash
+docker compose up --build
+```
+
+Open `http://localhost:8080`.
+
+For faster frontend iteration:
+
+```bash
+cd frontend
 npm install
-copy .env.example .env.local
 npm run dev
 ```
 
-Для macOS або Linux заміни `copy` на `cp`.
+Vite proxies `/api` to Spring Boot on port `8080`.
 
-Змінні середовища:
+## Environment variables
 
-```text
-GOOGLE_CLIENT_ID
-RESEND_API_KEY
-EMAIL_FROM
-```
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | JDBC PostgreSQL URL |
+| `DATABASE_USERNAME` | PostgreSQL user |
+| `DATABASE_PASSWORD` | PostgreSQL password |
+| `COOKIE_SECURE` | Enables Secure session cookies |
+| `GOOGLE_CLIENT_ID` | Google OAuth web client ID |
+| `RESEND_API_KEY` | Sends verification emails |
+| `EMAIL_FROM` | Verified sender address |
+| `VERIFICATION_PEPPER` | Secret used when hashing email codes |
 
-Справжні ключі не повинні потрапляти в Git. Для продакшну вони зберігаються як
-захищені змінні середовища хостингу.
+Never commit real secrets. Render and Neon store them as encrypted environment variables.
 
-## Перевірки
+## Deployment
 
-```bash
-npm run typecheck
-npm run build
-npm test
-```
+`render.yaml` defines the free Render web service. Connect this repository in Render, provide the Neon JDBC credentials and authentication secrets, and Render will build the Docker image and deploy every commit to `main`.
 
-## Архітектура безпеки
-
-Google ID token перевіряється на сервері за публічними ключами Google. Паролі
-ніколи не зберігаються відкритим текстом. Коди підтвердження діють 10 хвилин,
-у базі зберігається лише їхній SHA-256 хеш, а кількість невдалих спроб
-обмежена.
+The current Cloudflare deployment can remain online until the Render version is verified and the domain is switched.
